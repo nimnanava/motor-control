@@ -7,13 +7,13 @@ export default function MotorControl() {
   const [targetAngle, setTargetAngle] = useState(0);
   const [currentAngle, setCurrentAngle] = useState(0);
   const [inputAngle, setInputAngle] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // බ්ලූටූත් නිසා මුලින්ම ලෝඩින් අවශ්‍ය නොවේ
+  const [isLoading, setIsLoading] = useState(false); 
   const [isConnected, setIsConnected] = useState(false); 
   
-  // 🛠️ BLE සම්බන්ධතාවය තබා ගැනීමට useRef පාවිච්චි කරයි
-  const bleCharacteristicRef = useRef(null);
-  const bleDeviceRef = useRef(null);
-  const gaugeRef = useRef(null);
+  // 🛠️ BLE සම්බන්ධතාවය තබා ගැනීමට useRef පාවිච්චි කරයි (TypeScript සදහා any ලෙස දක්වා ඇත)
+  const bleCharacteristicRef = useRef<any>(null);
+  const bleDeviceRef = useRef<any>(null);
+  const gaugeRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
   // ESP32 කෝඩ් එකේ දුන්න UUID ම අගයන් මෙතනටත් දී ඇත
@@ -23,13 +23,13 @@ export default function MotorControl() {
   // 🔵 1. ESP32 බ්ලූටූත් එකට සම්බන්ධ වන ක්‍රියාවලිය
   const connectBluetooth = async () => {
     try {
-      if (!navigator.bluetooth) {
+      if (typeof window === 'undefined' || !(navigator as any).bluetooth) {
         alert("ඔයාගේ බ්‍රවුසර් එක Web Bluetooth සපයන්නේ නැත! Chrome හෝ Edge පාවිච්චි කරන්න.");
         return;
       }
 
       console.log("Requesting Bluetooth Device...");
-      const device = await navigator.bluetooth.requestDevice({
+      const device = await (navigator as any).bluetooth.requestDevice({
         filters: [{ name: 'ESP32_Motor_BLE' }],
         optionalServices: [SERVICE_UUID]
       });
@@ -75,7 +75,7 @@ export default function MotorControl() {
   };
 
   // 📥 3. ESP32 වෙතින් දත්ත ලැබෙන විට (Notification Handler)
-  const handleNotifications = (event) => {
+  const handleNotifications = (event: any) => {
     const value = event.target.value;
     const decoder = new TextDecoder('utf-8');
     const angleStr = decoder.decode(value);
@@ -87,7 +87,7 @@ export default function MotorControl() {
   };
 
   // 📤 4. අලුත් Target Angle එක බ්ලූටූත් හරහා ESP32 එකට යැවීම
-  const sendAngleToESP32 = async (angle) => {
+  const sendAngleToESP32 = async (angle: number) => {
     if (!bleCharacteristicRef.current || !isConnected) return;
     try {
       const encoder = new TextEncoder();
@@ -99,7 +99,7 @@ export default function MotorControl() {
   };
 
   // 📐 Gauge එක මත ක්ලික් කිරීම හෝ Drag කිරීම මඟින් කෝණය සෙවීම
-  const handleGaugeMove = (clientX, clientY) => {
+  const handleGaugeMove = (clientX: number, clientY: number) => {
     if (!gaugeRef.current) return;
 
     const rect = gaugeRef.current.getBoundingClientRect();
@@ -120,25 +120,25 @@ export default function MotorControl() {
   };
 
   // Mouse Events
-  const handleMouseDown = (e) => {
-    if (!isConnected) return; // කනෙක්ට් නැත්නම් ඩ්‍රැග් කරන්න දෙන්න එපා
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!isConnected) return; 
     isDragging.current = true;
     handleGaugeMove(e.clientX, e.clientY);
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current) return;
     handleGaugeMove(e.clientX, e.clientY);
   };
 
   // Touch Events
-  const handleTouchStart = (e) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     if (!isConnected) return;
     isDragging.current = true;
     if (e.touches[0]) handleGaugeMove(e.touches[0].clientX, e.touches[0].clientY);
   };
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging.current) return;
     if (e.touches[0]) handleGaugeMove(e.touches[0].clientX, e.touches[0].clientY);
   };
@@ -166,7 +166,7 @@ export default function MotorControl() {
   };
 
   // 🎯 Quick Presets ක්ලික් කිරීම
-  const applyPreset = (angle) => {
+  const applyPreset = (angle: number) => {
     setTargetAngle(angle);
     sendAngleToESP32(angle);
   };
@@ -182,7 +182,7 @@ export default function MotorControl() {
       <div className="w-full max-w-4xl flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <div className="text-center sm:text-left">
           <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400 bg-clip-text text-transparent uppercase tracking-wider">
-            Interactive PID Dashboard,,,,,
+            Interactive PID Dashboard
           </h1>
           <p className="text-slate-400 text-xs mt-1">Real-time Closed-Loop BLE Angular Position Control</p>
         </div>
