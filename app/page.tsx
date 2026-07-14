@@ -182,7 +182,7 @@ export default function MotorControl() {
       <div className="w-full max-w-4xl flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <div className="text-center sm:text-left">
           <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400 bg-clip-text text-transparent uppercase tracking-wider">
-            Interactive PID Dashboard
+            motor position controller Dashboard
           </h1>
           <p className="text-slate-400 text-xs mt-1">Real-time Closed-Loop BLE Angular Position Control</p>
         </div>
